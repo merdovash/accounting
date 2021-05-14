@@ -1,16 +1,14 @@
 import 'package:accounting/registry/registry.dart';
 import 'package:accounting/registry/registry_item.dart';
+import 'package:accounting/registry/registry_list.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
-import 'package:sliver_calendar/sliver_calendar.dart';
-import 'package:timezone/timezone.dart';
-import 'package:timezone/standalone.dart';
-import 'package:timezone/data/latest.dart' as tzl;
-import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
+import 'forms/PayItemForm.dart';
 
 void main() {
   initializeDateFormatting();
-  tzl.initializeTimeZones();
   runApp(MyApp());
 }
 
@@ -36,13 +34,13 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage('Flutter Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage(this.title) : super();
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -53,25 +51,33 @@ class MyHomePage extends StatefulWidget {
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
 
-  final String title;
-  final IRegistry registrySource = RegistryStub();
+  late final String title;
+  final IRegistry registrySource = SqliteDataRegistry();
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  void _createNewPay(context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) {
+          return PayItemForm(
+              PayItem(
+                  id: -1,
+                  date: DateTime.now(),
+                  paySum: Decimal.zero
+              ),
+          );
+        })
+    );
+  }
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  @override
+  void dispose() {
+    super.dispose();
+    widget.registrySource.dispose();
   }
 
   @override
@@ -91,15 +97,11 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: CalendarWidget(
-          initialDate: TZDateTime.now(getLocation('Europe/Moscow')),
-          buildItem: buildRegistryItem,
-          getEvents: getEvents,
-        ),
+        child: RegistryList(),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        onPressed: () => _createNewPay(context),
+        tooltip: 'Add',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );

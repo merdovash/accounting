@@ -1,19 +1,35 @@
 import 'package:decimal/decimal.dart';
-import 'package:sliver_calendar/sliver_calendar.dart';
-import 'package:timezone/timezone.dart';
-import 'package:timezone/data/latest.dart' as tzl;
 
-class PayItem extends CalendarEvent {
-  Decimal paySum;
-  String category;
+class PayItem {
+  Decimal _paySum = Decimal.zero;
+  String category = '';
 
-  DateTime _date;
-  TZDateTime _tzDate;
-  DateTime get date => _date;
-  set date(value) {
-    _date = value;
-    _tzDate = TZDateTime.from(date, getLocation('Europe/Moscow'));
+  late int id;
+  late DateTime date;
+
+  PayItem({required int id, required DateTime date, required Decimal? paySum}) {
+    this.paySum = paySum;
+    this.id = id;
+    this.date = date;
   }
-  TZDateTime get instant => _tzDate;
-  TZDateTime get instantEnd => _tzDate;
+
+  Decimal get paySum => _paySum;
+  set paySum(Decimal? value) {
+    if (value == null) {
+      value = Decimal.zero;
+    }
+    _paySum = value;
+  }
+
+  @override
+  // TODO: implement hashCode
+  int get hashCode => id.hashCode;
+
+  static PayItem fromJson(Map<String, dynamic> json) {
+    return PayItem(
+        id: int.parse(json['id'].toString()),
+        date: DateTime.parse(json['date']),
+        paySum: Decimal.parse(json['paySum'].toString())
+    );
+  }
 }

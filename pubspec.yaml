@@ -18,17 +18,17 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  decimal: ^0.3.5
-  timezone: ^0.5.2
+  decimal: ^1.1.0
   sliver_calendar:
     git:
       url: https://github.com/pinkfish/flutter_calendar.git
-  html:
+  sqflite: ^2.0.0
+  flutter_form_builder: ^6.0.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -50,6 +50,8 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  assets:
+    - assets/db.db
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
