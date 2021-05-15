@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:accounting/database/database.dart';
+import 'package:accounting/forms/PayItemForm.dart';
 import 'package:accounting/registry/pay_registry_item.dart';
 import 'package:accounting/registry/registry_item.dart';
+import 'package:accounting/tools/list.dart';
 import 'package:accounting/tools/types.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:accounting/tools/date.dart';
@@ -47,8 +50,8 @@ class _RegistryList extends State<RegistryList> {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return Material(
-      child: StreamBuilder(
+    return Scaffold(
+      body: StreamBuilder(
         stream: streamItems,
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.hasError) {
@@ -71,8 +74,30 @@ class _RegistryList extends State<RegistryList> {
             },
           );
         },
-      )
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _createNewPay(context),
+        tooltip: 'Add',
+        child: Icon(Icons.add),
+      ),
     );
+  }
+
+  void _createNewPay(context) async {
+    PayItem? result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) {
+          return PayItemForm(
+            PayItem(
+                id: -1,
+                date: DateTime.now(),
+                paySum: Decimal.zero
+            ),
+          );
+        })
+    );
+    if (result == null) return;
+    itemsController.add([result]);
   }
 
   loadNext() async {
@@ -100,7 +125,12 @@ class _RegistryList extends State<RegistryList> {
   }
 
   List<PayItem> saveNewItems(List<PayItem> items) {
-    this.items.addAll(items);
+    if (items.length == 1) {
+      insertSorted(this.items, items[0], (p1, p2) => dateCmp(p1.date, p2.date));
+    }
+    else {
+      this.items.addAll(items);
+    }
     return this.items;
   }
 

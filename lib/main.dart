@@ -1,11 +1,8 @@
 import 'package:accounting/registry/registry.dart';
 import 'package:accounting/registry/registry_item.dart';
 import 'package:accounting/registry/registry_list.dart';
-import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
-
-import 'forms/PayItemForm.dart';
 
 void main() {
   initializeDateFormatting();
@@ -59,21 +56,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  void _createNewPay(context) {
-    Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) {
-          return PayItemForm(
-              PayItem(
-                  id: -1,
-                  date: DateTime.now(),
-                  paySum: Decimal.zero
-              ),
-          );
-        })
-    );
-  }
-
   @override
   void dispose() {
     super.dispose();
@@ -98,11 +80,6 @@ class _MyHomePageState extends State<MyHomePage> {
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: RegistryList(),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _createNewPay(context),
-        tooltip: 'Add',
-        child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }

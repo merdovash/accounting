@@ -56,7 +56,7 @@ class PayItemForm extends StatelessWidget {
                 payItem.date = safe_cast<DateTime>(fields['date']?.value, DateTime.now());
 
                 saveToDB();
-                Navigator.pop(context);
+                Navigator.pop(context, payItem);
               },
               child: Text('Сохранить'),
             )

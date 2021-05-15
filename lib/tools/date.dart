@@ -15,3 +15,7 @@ DateTime addDay(DateTime date) {
 DateTime addDates(DateTime date, DateTime interval) {
   return DateTime.fromMillisecondsSinceEpoch(date.millisecondsSinceEpoch + interval.millisecondsSinceEpoch);
 }
+
+int dateCmp(DateTime a, DateTime b) {
+  return a.millisecondsSinceEpoch - b.millisecondsSinceEpoch;
+}
