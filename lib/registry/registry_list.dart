@@ -90,7 +90,9 @@ class _RegistryList extends State<RegistryList> {
             })
           );
           if (result == null) return;
-          itemsController.add([result]);
+          setState(() {
+            itemsController.add([result]);
+          });
         },
         tooltip: 'Add',
         child: Icon(Icons.add),
