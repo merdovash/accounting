@@ -16,12 +16,35 @@ class PayItemForm extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
+      appBar: AppBar(
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(payItem.id <=0 ? 'Добавление платежа': 'Платеж'),
+      ),
       body: FormBuilder(
         key: _formKey,
         child: Column(
           children: [
             FormBuilderTextField(
-                name: 'paySum',
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              validator: FormBuilderValidators.compose([
+                FormBuilderValidators.numeric(context),
+                FormBuilderValidators.min(context, 0, inclusive: false)
+              ]),
+              decoration: InputDecoration(
+                labelText: 'Сумма',
+                suffix: Text('₽')
+              ),
+              name: 'paySum',
+            ),
+            FormBuilderDateTimePicker(
+              name: 'date',
+              decoration: InputDecoration(
+                labelText: 'Дата',
+              ),
+              inputType: InputType.date,
+              //timePickerInitialEntryMode: null,
             ),
             ElevatedButton(
               onPressed: ()  {
@@ -30,13 +53,10 @@ class PayItemForm extends StatelessWidget {
                 state.save();
                 final fields = state.fields;
                 payItem.paySum = safe_cast<Decimal>(Decimal.tryParse(fields['paySum']?.value), payItem.paySum);
+                payItem.date = safe_cast<DateTime>(fields['date']?.value, DateTime.now());
 
-                DatabaseConnection().rawQuery(
-                  '''
-                  insert into "Pay" (date, description, paySum) values (?, ?, ?)
-                  ''',
-                  [payItem.date, '', payItem.paySum]
-                );
+                saveToDB();
+                Navigator.pop(context);
               },
               child: Text('Сохранить'),
             )
@@ -46,9 +66,30 @@ class PayItemForm extends StatelessWidget {
         autovalidateMode: AutovalidateMode.onUserInteraction,
         initialValue: {
           'paySum': payItem.paySum.toString(),
+          'date': payItem.date,
         },
       )
     );
+  }
+
+  saveToDB() {
+    if (payItem.id <= 0) {
+      DatabaseConnection().rawQuery(
+        '''
+        insert into "Pay" (date, description, paySum) values (?, ?, ?)
+        ''',
+        [payItem.date, '', payItem.paySum]
+      );
+    } else {
+      DatabaseConnection().rawQuery(
+        '''
+        update "Pay" 
+        set (date, description, paySum) = (?, ?, ?)
+        where "id" = ?
+        ''',
+        [payItem.date, '', payItem.paySum, payItem.id]
+      );
+    }
   }
 
 }

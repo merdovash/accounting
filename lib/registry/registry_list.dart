@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:accounting/database/database.dart';
+import 'package:accounting/registry/pay_registry_item.dart';
 import 'package:accounting/registry/registry_item.dart';
 import 'package:accounting/tools/types.dart';
 import 'package:flutter/cupertino.dart';
@@ -132,13 +133,10 @@ class _RegistryList extends State<RegistryList> {
       yield Divider();
       yield Text(currentDate.day.toString());
       while (hasNext && current!=null && sameDay(currentDate, current.date)) {
-        yield ListTile(
-          title: Text(current.paySum.toString()),
-        );
+        yield RegistryPayItem(current);
         hasNext = iterator.moveNext();
         if (hasNext) current = iterator.current;
       }
-
       currentDate = addDay(currentDate);
     }
   }
