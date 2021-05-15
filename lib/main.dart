@@ -87,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget buildRegistryItem(BuildContext context, payItem) {
     return ListTile(
       title: Text(payItem.paySum.toString()),
-      subtitle: Text(payItem.category),
+      subtitle: Text(payItem.description),
     );
   }
 

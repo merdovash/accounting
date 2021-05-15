@@ -173,6 +173,7 @@ class _RegistryList extends State<RegistryList> {
     return ListTile(
       leading: Text(DateFormat("dd.MM.yy", 'RU-ru').format(payItem.date)),
       title: Text(payItem.paySum.toString() + '₽'),
+      subtitle: Text(payItem.description),
       onTap: () async {
         PayItem? result = await Navigator.push(
             context,
@@ -183,8 +184,10 @@ class _RegistryList extends State<RegistryList> {
             })
         );
         if (result != null) {
-          this.items.remove(payItem);
-          itemsController.add([result]);
+          setState(() {
+            this.items.remove(payItem);
+            itemsController.add([result]);
+          });
         }
       },
     );

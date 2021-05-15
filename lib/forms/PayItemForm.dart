@@ -48,6 +48,12 @@ class PayItemForm extends StatelessWidget {
               format: DateFormat('dd.MM.yy'),
               //timePickerInitialEntryMode: null,
             ),
+            FormBuilderTextField(
+              name: 'description',
+              decoration: InputDecoration(
+                labelText: 'Назначение',
+              ),
+            ),
             ElevatedButton(
               onPressed: ()  {
                 final state = _formKey.currentState;
@@ -56,6 +62,7 @@ class PayItemForm extends StatelessWidget {
                 final fields = state.fields;
                 payItem.paySum = safe_cast<Decimal>(Decimal.tryParse(fields['paySum']?.value), payItem.paySum);
                 payItem.date = safe_cast<DateTime>(fields['date']?.value, DateTime.now());
+                payItem.description = safe_cast<String>(fields['description']?.value, '');
 
                 saveToDB();
                 Navigator.pop(context, payItem);
@@ -69,6 +76,7 @@ class PayItemForm extends StatelessWidget {
         initialValue: {
           'paySum': payItem.paySum.toString(),
           'date': payItem.date,
+          'description': payItem.description,
         },
       )
     );
