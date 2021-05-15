@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:accounting/database/database.dart';
 import 'package:accounting/forms/PayItemForm.dart';
-import 'package:accounting/registry/pay_registry_item.dart';
 import 'package:accounting/registry/registry_item.dart';
 import 'package:accounting/tools/list.dart';
 import 'package:accounting/tools/types.dart';
@@ -11,6 +10,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:accounting/tools/date.dart';
+import 'package:intl/intl.dart';
 
 class RegistryList extends StatefulWidget {
   @override
@@ -76,28 +76,26 @@ class _RegistryList extends State<RegistryList> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _createNewPay(context),
+        onPressed: () async {
+          PayItem? result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) {
+              return PayItemForm(
+                PayItem(
+                  id: -1,
+                  date: DateTime.now(),
+                  paySum: Decimal.zero
+                ),
+              );
+            })
+          );
+          if (result == null) return;
+          itemsController.add([result]);
+        },
         tooltip: 'Add',
         child: Icon(Icons.add),
       ),
     );
-  }
-
-  void _createNewPay(context) async {
-    PayItem? result = await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) {
-          return PayItemForm(
-            PayItem(
-                id: -1,
-                date: DateTime.now(),
-                paySum: Decimal.zero
-            ),
-          );
-        })
-    );
-    if (result == null) return;
-    itemsController.add([result]);
   }
 
   loadNext() async {
@@ -163,11 +161,32 @@ class _RegistryList extends State<RegistryList> {
       yield Divider();
       yield Text(currentDate.day.toString());
       while (hasNext && current!=null && sameDay(currentDate, current.date)) {
-        yield RegistryPayItem(current);
+        yield buildRecord(current);
         hasNext = iterator.moveNext();
         if (hasNext) current = iterator.current;
       }
       currentDate = addDay(currentDate);
     }
+  }
+
+  Widget buildRecord(PayItem payItem) {
+    return ListTile(
+      leading: Text(DateFormat("dd.MM.yy", 'RU-ru').format(payItem.date)),
+      title: Text(payItem.paySum.toString() + '₽'),
+      onTap: () async {
+        PayItem? result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) {
+              return PayItemForm(
+                payItem,
+              );
+            })
+        );
+        if (result != null) {
+          this.items.remove(payItem);
+          itemsController.add([result]);
+        }
+      },
+    );
   }
 }

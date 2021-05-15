@@ -5,6 +5,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:intl/intl.dart';
 
 class PayItemForm extends StatelessWidget {
   final _formKey = GlobalKey<FormBuilderState>();
@@ -44,6 +45,7 @@ class PayItemForm extends StatelessWidget {
                 labelText: 'Дата',
               ),
               inputType: InputType.date,
+              format: DateFormat('dd.MM.yy'),
               //timePickerInitialEntryMode: null,
             ),
             ElevatedButton(
