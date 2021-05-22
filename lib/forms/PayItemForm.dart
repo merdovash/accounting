@@ -1,5 +1,6 @@
 import 'package:accounting/database/database.dart';
-import 'package:accounting/registry/registry_item.dart';
+import 'package:accounting/database/pay_category.dart';
+import 'file:///C:/self/AndroidStudioProjects/accounting/lib/database/pay_item.dart';
 import 'package:accounting/tools/types.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,9 @@ class PayItemForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var defaultPayCategories = PayCategory.defaultValues().map(PayCategory.fromJson).toList();
+
+
     // TODO: implement build
     return Scaffold(
       appBar: AppBar(
@@ -48,6 +52,38 @@ class PayItemForm extends StatelessWidget {
               format: DateFormat('dd.MM.yy'),
               //timePickerInitialEntryMode: null,
             ),
+            FutureBuilder(
+              initialData: FormBuilderDropdown<PayCategory>(
+                name: 'payCategory',
+                items:  defaultPayCategories
+                    .map(payCategoryElement)
+                    .toList()
+              ),
+              future: DatabaseConnection().rawQuery('select * from "PayCategory"').then((List<Map<String, dynamic>> res) {
+                var result = res.map(PayCategory.fromJson).toList();
+                //defaultPayCategories = result;
+                return result;
+              }),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                if (snapshot.hasData) {
+                  return FormBuilderDropdown<PayCategory>(
+                      name: 'payCategory',
+                      items: safe_cast<List<PayCategory>>(
+                          snapshot.data,
+                          defaultPayCategories,
+                      )
+                          .map(payCategoryElement)
+                          .toList()
+                  );
+                }
+                return FormBuilderDropdown<PayCategory>(
+                    name: 'payCategory',
+                    items: defaultPayCategories
+                        .map(payCategoryElement)
+                        .toList()
+                );
+              }
+            ),
             FormBuilderTextField(
               name: 'description',
               decoration: InputDecoration(
@@ -63,6 +99,7 @@ class PayItemForm extends StatelessWidget {
                 payItem.paySum = safe_cast<Decimal>(Decimal.tryParse(fields['paySum']?.value), payItem.paySum);
                 payItem.date = safe_cast<DateTime>(fields['date']?.value, DateTime.now());
                 payItem.description = safe_cast<String>(fields['description']?.value, '');
+                payItem.payCategory = safe_cast<PayCategory>(fields['payCategory']?.value, defaultPayCategories[0]);
 
                 saveToDB();
                 Navigator.pop(context, payItem);
@@ -77,6 +114,7 @@ class PayItemForm extends StatelessWidget {
           'paySum': payItem.paySum.toString(),
           'date': payItem.date,
           'description': payItem.description,
+          'payCategory': payItem.payCategory,
         },
       )
     );
@@ -86,20 +124,27 @@ class PayItemForm extends StatelessWidget {
     if (payItem.id <= 0) {
       DatabaseConnection().rawQuery(
         '''
-        insert into "Pay" (date, description, paySum) values (?, ?, ?)
+        insert into "Pay" (date, description, paySum, payCategory) values (?, ?, ?, ?)
         ''',
-        [payItem.date, '', payItem.paySum]
+        [payItem.date, '', payItem.paySum, payItem.payCategory.id]
       );
     } else {
       DatabaseConnection().rawQuery(
         '''
         update "Pay" 
-        set (date, description, paySum) = (?, ?, ?)
+        set (date, description, paySum, payCategory) = (?, ?, ?, ?)
         where "id" = ?
         ''',
-        [payItem.date, '', payItem.paySum, payItem.id]
+        [payItem.date, '', payItem.paySum, payItem.payCategory.id, payItem.id]
       );
     }
+  }
+
+  DropdownMenuItem<PayCategory> payCategoryElement(PayCategory category) {
+    return DropdownMenuItem<PayCategory>(
+      child: Text(category.name),
+      value: category,
+    );
   }
 
 }

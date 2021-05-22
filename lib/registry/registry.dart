@@ -2,7 +2,7 @@ import 'dart:collection';
 import 'dart:math';
 
 import 'package:accounting/database/database.dart';
-import 'package:accounting/registry/registry_item.dart';
+import 'file:///C:/self/AndroidStudioProjects/accounting/lib/database/pay_item.dart';
 import 'package:decimal/decimal.dart';
 
 enum Direction{

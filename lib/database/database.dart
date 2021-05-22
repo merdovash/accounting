@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:accounting/database/pay_category.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -41,7 +42,7 @@ class DatabaseConnection extends IDatabase {
 
   Future<Database> createAndOpenDatabase() async {
     var databasesPath = await getDatabasesPath();
-    var path = join(databasesPath, "db.db");
+    var path = join(databasesPath, "db1.db");
 
     try {
       await Directory(dirname(path)).create(recursive: true);
@@ -49,12 +50,39 @@ class DatabaseConnection extends IDatabase {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 4,
+
       onCreate: (Database db, int version) async {
         // When creating the db, create the table
+        initTablePayCategory(db);
+
         await db.execute(
-            'CREATE TABLE Pay (id INTEGER PRIMARY KEY, date TEXT, description TEXT, paySum NUMERIC)'
+          '''
+            CREATE TABLE Pay (
+              id INTEGER PRIMARY KEY,
+              date TEXT NOT NULL,
+              description TEXT,
+              paySum NUMERIC NOT NULL,
+              payCategory INTEGER NOT NULL,
+              FOREIGN KEY(payCategory) REFERENCES PayCategory(id)
+            )
+          '''
         );
+      },
+      onUpgrade: (Database db, int oldVersion, int newVersion) async {
+        switch (oldVersion) {
+          case 1:
+            await db.execute('''
+              alter table Pay 
+              add column payCategory INTEGER NOT NULL DEFAULT (1) REFERENCES PayCategory(id);
+            ''');
+            continue second;
+
+          second:
+          case 2:
+            initTablePayCategory(db);
+            db.execute('update Pay set PayCategory = 1;');
+        }
       }
     );
   }

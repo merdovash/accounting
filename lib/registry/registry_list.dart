@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:accounting/database/database.dart';
 import 'package:accounting/forms/PayItemForm.dart';
-import 'package:accounting/registry/registry_item.dart';
+import 'file:///C:/self/AndroidStudioProjects/accounting/lib/database/pay_item.dart';
 import 'package:accounting/tools/list.dart';
 import 'package:accounting/tools/types.dart';
 import 'package:decimal/decimal.dart';
@@ -101,12 +101,20 @@ class _RegistryList extends State<RegistryList> {
   }
 
   loadNext() async {
+    if (alreadyLoading) return;
+    alreadyLoading = true;
     var lastDate = addDates(endLoadedDate, interval);
     var result = await DatabaseConnection()
         .rawQuery(
         '''
-          select * 
+          select 
+            "Pay".*
+            , "PayCategory"."id" as "PayCategory.id"
+            , "PayCategory"."name" as "PayCategory.name"
+            , "PayCategory"."direction" as "PayCategory.direction"
+            , "PayCategory"."description" as "PayCategory.description"
           from "Pay" 
+            left join "PayCategory" on "Pay"."payCategory" = "PayCategory"."id"
           where
              "date" >= ?
              and "date" < ?
@@ -121,11 +129,15 @@ class _RegistryList extends State<RegistryList> {
       endLoadedDate = lastDate;
       return el.map(PayItem.fromJson).toList();
     });
-    itemsController.add(result);
+    setState(() {
+      itemsController.add(result);
+      alreadyLoading = false;
+    });
   }
 
   List<PayItem> saveNewItems(List<PayItem> items) {
     if (items.length == 1) {
+      if (this.items.contains(items[0])) return this.items;
       insertSorted(this.items, items[0], (p1, p2) => dateCmp(p1.date, p2.date));
     }
     else {
@@ -174,7 +186,7 @@ class _RegistryList extends State<RegistryList> {
   Widget buildRecord(PayItem payItem) {
     return ListTile(
       leading: Text(DateFormat("dd.MM.yy", 'RU-ru').format(payItem.date)),
-      title: Text(payItem.paySum.toString() + '₽'),
+      title: Text('${payItem.payCategory.sign()}${payItem.paySum.toString()}₽'),
       subtitle: Text(payItem.description),
       onTap: () async {
         PayItem? result = await Navigator.push(

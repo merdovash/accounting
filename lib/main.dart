@@ -1,5 +1,5 @@
 import 'package:accounting/registry/registry.dart';
-import 'package:accounting/registry/registry_item.dart';
+import 'file:///C:/self/AndroidStudioProjects/accounting/lib/database/pay_item.dart';
 import 'package:accounting/registry/registry_list.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
